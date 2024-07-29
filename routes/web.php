@@ -1,48 +1,32 @@
 <?php
 
+use App\Http\Controllers\JobController;
+use App\Http\Controllers\RegisteredUserController;
+use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
-use App\Models\Job;
+
+//static routes
+Route::view('/', 'home');
+Route::view('/contact', 'contact');
+
+//jobs route
+Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::post('/jobs', [JobController::class, 'store']);
+Route::get('/jobs/create', [JobController::class, 'create'])->name('jobs.create')->middleware('auth');
+Route::get('/jobs/{job}', [JobController::class, 'show']);
+Route::get('/jobs/{job}/edit', [JobController::class, 'edit'])->name('jobs.edit')->middleware('auth')->can('edit', 'job');
+Route::patch('/jobs/{job}', [JobController::class, 'update'])->middleware('auth')->can('edit', 'job');
+Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->middleware('auth')->can('edit', 'job');
 
 
-Route::get('/', function () {
-    return view('home');
-});
+//auth routes
+Route::get('/register', [RegisteredUserController::class, 'create']);
+Route::post('/register', [RegisteredUserController::class, 'store']);
 
-Route::get('/jobs', function () {
+//session routes
+Route::get('/login', [SessionController::class, 'create'])->name('login');
+Route::post('/login', [SessionController::class, 'store']);
+Route::post('/logout', [SessionController::class, 'destroy']);
 
-    $jobs = Job::with('employer')->latest()->cursorPaginate(15);
 
-    return view('jobs.index', [
-        'jobs' => $jobs
-    ]);
-});
 
-Route::post('/jobs', function () {
-    //Validation
-    request()->validate([
-        'title' => ['required', 'string', 'min:3'],
-        'salary' => ['required', 'string'],
-    ]);
-
-    //save the job
-    Job::create([
-        'title' => request('title'),
-        'salary' => request('salary'),
-        'employer_id' => 1,
-    ]);
-
-    return redirect('/jobs');
-});
-
-Route::get('/jobs/create', function () {
-    return view('jobs.create');
-});
-
-Route::get('/jobs/{id}', function ($id) {
-    $job = Job::find($id);
-    return view('jobs.show', ['job' => $job]);
-});
-
-Route::get('/contact', function () {
-    return view('contact');
-});

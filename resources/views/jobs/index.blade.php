@@ -7,6 +7,8 @@
                 <div>
                     <strong>{{$job['title']}}:</strong> Pays {{$job['salary']}} per year
                 </div>
+                <p>Created By {{$job->employer->user->first_name}} {{$job->employer->user->last_name}} on behalf
+                    of {{$job->employer->name}}</p>
             </a>
         @endforeach
 
